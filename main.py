@@ -16,7 +16,11 @@ cycletime = cross.cycletime
 vehicle_inputs = np.array([244, 198, 268, 216, 132, 210, 272, 152])
 cross.set_vehicle_input(vehicle_inputs)
 
-for episolon in range(10):
+delay_save = 0
+count = 0
+episolon = 1
+
+while(True):
     status = 0
     delay = 0
     print("episolon=%d" % episolon)
@@ -28,9 +32,22 @@ for episolon in range(10):
         status = status_
         delay += cross.get_delay(cross.current_time)
     
+
     print("Total delay : %f s" % delay)
     cross.reset()
     print('-----------')
+    episolon += 1
+    
+    if(abs( delay - delay_save ) < 0.00001):
+        count += 1
+        delay_save = delay
+        if count >= 300:
+            break
+    else:
+        count = 0
+        delay_save = delay
+
+
 print("Learning is OK!")
 ql.save_data()
 
@@ -53,6 +70,8 @@ for i in range(50):
     [status, reward] = cross.env_interface(70, ql.action_table[action])
     delay += cross.get_delay(cross.current_time)
 print("Total delay after : %f s" % delay)
+
+cross.reset()
 
 
 
