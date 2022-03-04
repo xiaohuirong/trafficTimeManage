@@ -1,6 +1,5 @@
 import socket
 import json
-from unicodedata import name
 
 # data为一个表示车道流量数据的列表
 # [东左转，东直行，西直行，西左转，北直行，北左转，南直行，南左转]
@@ -10,7 +9,8 @@ def send_data(data):
     content = content.encode('utf-8')
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.connect(('127.0.0.1', 8000))
+#    sock.connect(('cn-hn-dx-2.natfrp.cloud', 49147))
+    sock.connect(("175.178.96.22", 8888))
     sock.send(content)
     receive = sock.recv(4096)
     sock.close()
