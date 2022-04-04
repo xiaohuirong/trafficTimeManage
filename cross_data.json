@@ -1,0 +1,20 @@
+{
+    "Key Flow": {
+        "East West Straight": 1,
+        "East West Left": 1,
+        "South North Straight": 2,
+        "South North Left": 0
+    },
+    "Special Car": {
+        "East West Straight": 0,
+        "East West Left": 0,
+        "South North Straight": 0,
+        "South North Left": 0
+    },
+    "Light Time": {
+        "East West Straight": 16,
+        "East West Left": 14,
+        "South North Straight": 10,
+        "South North Left": 14
+    }
+}
