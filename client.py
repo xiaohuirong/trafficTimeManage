@@ -10,11 +10,15 @@ def send_data(data):
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 #    sock.connect(('cn-hn-dx-2.natfrp.cloud', 49147))
-    sock.connect(("175.178.96.22", 8888))
+    sock.connect(("127.0.0.1", 5000))
     sock.send(content)
     receive = sock.recv(4096)
     sock.close()
     return receive.decode('utf-8')
 
 if __name__ == '__main__':
-    print(send_data([1, 2, 3]))
+    data = [100, 100, 100, 100, 0, 0, 0, 0]
+    while True:
+        a = int(input())
+        data[4] = a
+        send_data(data)

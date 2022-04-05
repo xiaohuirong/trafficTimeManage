@@ -120,18 +120,20 @@ class Cross(object):
         status_num = 8*status_[0] + 4*status_[1] + 2*status_[2] + status_[3]
 
         delay_time = self.get_delay(self.current_time)
-        if delay_time <= 24:
-            reward = 0
-        elif delay_time <= 26:
-            reward = 10
-        elif delay_time <= 28:
-            reward = 20
-        elif delay_time <= 30:
-            reward = 30
-        elif delay_time <= 32:
-            reward = 40
-        else:
-            reward = 50
+        #这里修改奖励方案
+        # if delay_time <= 24:
+        #     reward = 0
+        # elif delay_time <= 26:
+        #     reward = 10
+        # elif delay_time <= 28:
+        #     reward = 20
+        # elif delay_time <= 30:
+        #     reward = 30
+        # elif delay_time <= 32:
+        #     reward = 40
+        # else:
+        #     reward = 50
+        reward = delay_time
         
         return [status_num, reward]
         

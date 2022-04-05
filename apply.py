@@ -1,8 +1,9 @@
 from q_learn import QL
 from real import Real
-from threading import Timer
+from threading import Timer, Lock, Thread
 import json
 import time
+from flask import Flask, jsonify
 
 ql = QL()
 ql.load_data()
@@ -37,10 +38,22 @@ light_time = {"East West Straight": action[0],\
                 "South North Straight": action[2],\
                 "South North Left": action[3]}
 
+cross_data = {"Key Flow": key_flow,\
+                "Special Car": special_car,\
+                "Light Time": light_time}
 
+app = Flask(__name__)
+thread_lock = Lock()
+
+@app.route('/api/info', methods=['GET'])
+def get_tasks():
+    global cross_data, thread_lock
+    with thread_lock:
+        send_data = cross_data
+    return jsonify(send_data)
 
 def receive_and_save():
-    global special_car, key_flow, light_time, lock, light_status, timer
+    global special_car, key_flow, light_time, lock, light_status, timer, thread_lock
     server = Real()
     while(1):
         receive_data = server.get_data()
@@ -113,7 +126,7 @@ def receive_and_save():
 
         status_list= [0]*4
         for i in range(0,4):
-            if key_flow[i] > 300 :
+            if receive_data[i] > 300 :
                 status_list[i] = 1
             else :
                 status_list[i] = 0
@@ -129,17 +142,18 @@ def receive_and_save():
                 "South North Straight": action[2],\
                 "South North Left": action[3]}
 
-        cross_data = {"Key Flow": key_flow,\
-                "Special Car": special_car,\
-                "Light Time": light_time}
+        with thread_lock:
+            cross_data = {"Key Flow": key_flow,\
+                    "Special Car": special_car,\
+                    "Light Time": light_time}
         
         
 
         print(cross_data)
-        json_data = json.dumps(cross_data, indent=4)
+        # json_data = json.dumps(cross_data, indent=4)
 
-        with open('cross_data.json', 'w') as json_file:
-            json_file.write(json_data)
+        # with open('cross_data.json', 'w') as json_file:
+        #     json_file.write(json_data)
         
 def change_lightstatus(light_status_):
     global light_status
@@ -179,8 +193,9 @@ def light_control():
 
 if __name__=='__main__':
     light_control()
-    while True:
-        receive_and_save()
     
+    t = Thread(target=receive_and_save)
+    t.daemon = True
+    t.start()
 
-
+    app.run(host="0.0.0.0", port=5001)
