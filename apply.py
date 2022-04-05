@@ -1,9 +1,11 @@
+from tokenize import Special
 from q_learn import QL
 from real import Real
 from threading import Timer, Lock, Thread
 import json
 import time
 from flask import Flask, jsonify
+from math import floor
 
 ql = QL()
 ql.load_data()
@@ -20,27 +22,40 @@ action_index = ql.check(status)
 action = ql.action_table[action_index]
 action.append(54-sum(action))
 
+lane_name = ["East West Straight", "East West Left", "South North Straight", "South North Left"]
+
+color_set = [{lane_name[0]: "red", lane_name[1]: "red", lane_name[2]: "red", lane_name[3]: "yellow" },\
+            {lane_name[0]: "green", lane_name[1]: "red", lane_name[2]: "red", lane_name[3]: "red" },\
+            {lane_name[0]: "yellow", lane_name[1]: "red", lane_name[2]: "red", lane_name[3]: "red" },\
+            {lane_name[0]: "red", lane_name[1]: "green", lane_name[2]: "red", lane_name[3]: "red" },\
+            {lane_name[0]: "red", lane_name[1]: "yellow", lane_name[2]: "red", lane_name[3]: "red" },\
+            {lane_name[0]: "red", lane_name[1]: "red", lane_name[2]: "green", lane_name[3]: "red" },\
+            {lane_name[0]: "red", lane_name[1]: "red", lane_name[2]: "yellow", lane_name[3]: "red" },\
+            {lane_name[0]: "red", lane_name[1]: "red", lane_name[2]: "red", lane_name[3]: "green" },\
+            {lane_name[0]: "red", lane_name[1]: "red", lane_name[2]: "red", lane_name[3]: "red" }]
 
 
 
-special_car = {"East West Straight": False,\
-                "East West Left": False,\
-                "South North Straight": False,\
-                "South North Left": False } 
 
-key_flow = {"East West Straight": 180,\
-                "East West Left": 250,\
-                "South North Straight": 320,\
-                "South North Left": 280 }
+special_car = {lane_name[0]: False,\
+                lane_name[1]: False,\
+                lane_name[2]: False,\
+                lane_name[3]: False } 
 
-light_time = {"East West Straight": action[0],\
-                "East West Left": action[1],\
-                "South North Straight": action[2],\
-                "South North Left": action[3]}
+key_flow = {lane_name[0]: 180,\
+                lane_name[1]: 250,\
+                lane_name[2]: 320,\
+                lane_name[3]: 280 }
+
+light_time = {lane_name[0]: action[0],\
+                lane_name[1]: action[1],\
+                lane_name[2]: action[2],\
+                lane_name[3]: action[3]}
 
 cross_data = {"Key Flow": key_flow,\
                 "Special Car": special_car,\
-                "Light Time": light_time}
+                "Light Time": light_time,\
+                "Light Status": color_set[light_status]}
 
 app = Flask(__name__)
 thread_lock = Lock()
@@ -53,7 +68,7 @@ def get_tasks():
     return jsonify(send_data)
 
 def receive_and_save():
-    global special_car, key_flow, light_time, lock, light_status, timer, thread_lock
+    global special_car, key_flow, light_time, lock, light_status, timer, thread_lock, cross_data, color_set, lane_name
     server = Real()
     while(1):
         receive_data = server.get_data()
@@ -65,10 +80,14 @@ def receive_and_save():
                 lock = True
                 timer.cancel()
                 if light_status != 1:
+                    with thread_lock:
+                        cross_data["Light Status"] = color_set[8]
+                        cross_data["Light Status"][lane_name[floor(((light_status + 7) % 8) / 2)]] = "yellow"
                     light_status = 8
                     print("-----------------------------------")
                     print("light_status: %d" % light_status)
                     print("interval: 3")
+                    print(cross_data["Light Status"])
                     timer = Timer(5, change_lightstatus, args=(1,))
                     timer.start()
 
@@ -77,10 +96,14 @@ def receive_and_save():
                 lock = True
                 timer.cancel()
                 if light_status != 3:
+                    with thread_lock:
+                        cross_data["Light Status"] = color_set[8]
+                        cross_data["Light Status"][lane_name[floor(((light_status + 7) % 8) / 2)]] = "yellow"
                     light_status = 8
                     print("-----------------------------------")
                     print("light_status: %d" % light_status)
                     print("interval: 3")
+                    print(cross_data["Light Status"])
                     timer = Timer(5, change_lightstatus, args=(3,))
                     timer.start()
 
@@ -89,10 +112,14 @@ def receive_and_save():
                 lock = True
                 timer.cancel()
                 if light_status != 5:
+                    with thread_lock:
+                        cross_data["Light Status"] = color_set[8]
+                        cross_data["Light Status"][lane_name[floor(((light_status + 7) % 8) / 2)]] = "yellow"
                     light_status = 8
                     print("-----------------------------------")
                     print("light_status: %d" % light_status)
                     print("interval: 3")
+                    print(cross_data["Light Status"])
                     timer = Timer(5, change_lightstatus, args=(5,))
                     timer.start()
 
@@ -101,10 +128,14 @@ def receive_and_save():
                 lock = True
                 timer.cancel()
                 if light_status != 7:
+                    with thread_lock:
+                        cross_data["Light Status"] = color_set[8]
+                        cross_data["Light Status"][lane_name[floor(((light_status + 7) % 8) / 2)]] = "yellow"
                     light_status = 8
                     print("-----------------------------------")
                     print("light_status: %d" % light_status)
                     print("interval: 3")
+                    print(cross_data["Light Status"])
                     timer = Timer(5, change_lightstatus, args=(7,))
                     timer.start()
 
@@ -114,15 +145,15 @@ def receive_and_save():
                 light_control()
                 
         
-        special_car["East West Straight"] = receive_data[4]
-        special_car["East West Left"] = receive_data[5]
-        special_car["South North Straight"] = receive_data[6]
-        special_car["South North Left"] = receive_data[7]
+        special_car[lane_name[0]] = receive_data[4]
+        special_car[lane_name[1]] = receive_data[5]
+        special_car[lane_name[2]] = receive_data[6]
+        special_car[lane_name[3]] = receive_data[7]
 
-        key_flow["East West Straight"] = receive_data[0]
-        key_flow["East West Left"] = receive_data[1]
-        key_flow["South North Straight"] = receive_data[2]
-        key_flow["South North Left"] = receive_data[3]
+        key_flow[lane_name[0]] = receive_data[0]
+        key_flow[lane_name[1]] = receive_data[1]
+        key_flow[lane_name[2]] = receive_data[2]
+        key_flow[lane_name[3]] = receive_data[3]
 
         status_list= [0]*4
         for i in range(0,4):
@@ -137,37 +168,41 @@ def receive_and_save():
         action = ql.action_table[action_index]
         action.append(54-sum(action))
         
-        light_time = {"East West Straight": action[0],\
-                "East West Left": action[1],\
-                "South North Straight": action[2],\
-                "South North Left": action[3]}
+        light_time = {lane_name[0]: action[0],\
+                lane_name[1]: action[1],\
+                lane_name[2]: action[2],\
+                lane_name[3]: action[3]}
 
         with thread_lock:
-            cross_data = {"Key Flow": key_flow,\
-                    "Special Car": special_car,\
-                    "Light Time": light_time}
+            cross_data["Key Flow"] = key_flow
+            cross_data["Special Car"] = special_car
+            cross_data["Light Time"] = light_time 
         
         
 
-        print(cross_data)
+        # print(cross_data)
         # json_data = json.dumps(cross_data, indent=4)
 
         # with open('cross_data.json', 'w') as json_file:
         #     json_file.write(json_data)
         
 def change_lightstatus(light_status_):
-    global light_status
+    global light_status, cross_data, color_set
     light_status = light_status_
+    with thread_lock:
+        cross_data["Light Status"] = color_set[light_status]
     print("-----------------------------------")
     print("light_status: %d" % light_status)
+    print(cross_data["Light Status"])
 
 def timer_func():
     global light_status
     light_status  =  (light_status + 1) % 8
+ 
     light_control()
 
 def light_control():
-    global special_car, key_flow, light_time, lock, light_status, timer
+    global special_car, key_flow, light_time, lock, light_status, timer, cross_data, color_set
 
     if light_status == 0 or light_status == 4:
         interval = 5
@@ -182,9 +217,13 @@ def light_control():
     else: 
         interval = action[3]
     
+    with thread_lock:
+        cross_data["Light Status"] = color_set[light_status]
+
     print("-----------------------------------")
     print("light_status: %d" % light_status)
     print("interval: %d" % interval)
+    print(cross_data["Light Status"])
     
     timer = Timer(interval, timer_func)
     timer.start()
