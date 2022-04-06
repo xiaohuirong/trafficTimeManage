@@ -52,10 +52,14 @@ light_time = {lane_name[0]: action[0],\
                 lane_name[2]: action[2],\
                 lane_name[3]: action[3]}
 
+
+people = {"Road1": 0, "Road2": 0, "Road3": 0, "Road4": 0}
+
 cross_data = {"Key Flow": key_flow,\
                 "Special Car": special_car,\
                 "Light Time": light_time,\
-                "Light Status": color_set[light_status]}
+                "Light Status": color_set[light_status],\
+                "People": people }
 
 app = Flask(__name__)
 thread_lock = Lock()
@@ -67,9 +71,21 @@ def get_tasks():
         send_data = cross_data
     return jsonify(send_data)
 
+def reveive_people_data():
+    global cross_data, thread_lock, people
+    people_server = Real(4999)
+    while True:
+        people_data = people_server.get_data()
+        people["Road1"] = people_data[0]
+        people["Road2"] = people_data[1]
+        people["Road3"] = people_data[2]
+        people["Road4"] = people_data[3]
+        with thread_lock:
+            cross_data["People"] = people
+
 def receive_and_save():
     global special_car, key_flow, light_time, lock, light_status, timer, thread_lock, cross_data, color_set, lane_name
-    server = Real()
+    server = Real(5000)
     while(1):
         receive_data = server.get_data()
         # time.sleep(5)
@@ -236,5 +252,9 @@ if __name__=='__main__':
     t = Thread(target=receive_and_save)
     t.daemon = True
     t.start()
+
+    t2 = Thread(target=reveive_people_data)
+    t2.daemon = True
+    t2.start()
 
     app.run(host="0.0.0.0", port=5001)

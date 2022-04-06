@@ -3,10 +3,10 @@ import json
 import pysnooper
 
 class Real(object):
-    def __init__(self) -> None:
+    def __init__(self, port) -> None:
         self.sock=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR,1)
-        self.sock.bind(('0.0.0.0', 5000))
+        self.sock.bind(('0.0.0.0', port))
         self.sock.listen(5)
 
     def get_data(self):
@@ -21,7 +21,7 @@ class Real(object):
         return data
 
 if __name__== '__main__':
-    real_cross = Real()
+    real_cross = Real(5000)
     while(1):
         receive_data = real_cross.get_data()
         print(receive_data)
