@@ -23,7 +23,7 @@ action_index = ql.check(status)
 action = ql.action_table[action_index]
 action.append(54-sum(action))
 
-lane_name = ["East West Straight", "East West Left", "South North Straight", "South North Left"]
+lane_name = ["East_West_Straight", "East_West_Left", "South_North_Straight", "South_North_Left"]
 
 color_set = [{lane_name[0]: "red", lane_name[1]: "red", lane_name[2]: "red", lane_name[3]: "yellow" },\
             {lane_name[0]: "green", lane_name[1]: "red", lane_name[2]: "red", lane_name[3]: "red" },\
@@ -56,10 +56,10 @@ light_time = {lane_name[0]: action[0],\
 
 people = {"Road1": 0, "Road2": 0, "Road3": 0, "Road4": 0}
 
-cross_data = {"Key Flow": key_flow,\
-                "Special Car": special_car,\
-                "Light Time": light_time,\
-                "Light Status": color_set[light_status],\
+cross_data = {"Key_Flow": key_flow,\
+                "Special_Car": special_car,\
+                "Light_Time": light_time,\
+                "Light_Status": color_set[light_status],\
                 "People": people }
 
 app = Flask(__name__)
@@ -100,13 +100,13 @@ def receive_and_save():
                 timer.cancel()
                 if light_status != 1:
                     with thread_lock:
-                        cross_data["Light Status"] = color_set[8]
-                        cross_data["Light Status"][lane_name[floor(((light_status + 7) % 8) / 2)]] = "yellow"
+                        cross_data["Light_Status"] = color_set[8]
+                        cross_data["Light_Status"][lane_name[floor(((light_status + 7) % 8) / 2)]] = "yellow"
                     light_status = 8
                     print("-----------------------------------")
                     print("light_status: %d" % light_status)
                     print("interval: 3")
-                    print(cross_data["Light Status"])
+                    print(cross_data["Light_Status"])
                     timer = Timer(5, change_lightstatus, args=(1,))
                     timer.start()
 
@@ -116,13 +116,13 @@ def receive_and_save():
                 timer.cancel()
                 if light_status != 3:
                     with thread_lock:
-                        cross_data["Light Status"] = color_set[8]
-                        cross_data["Light Status"][lane_name[floor(((light_status + 7) % 8) / 2)]] = "yellow"
+                        cross_data["Light_Status"] = color_set[8]
+                        cross_data["Light_Status"][lane_name[floor(((light_status + 7) % 8) / 2)]] = "yellow"
                     light_status = 8
                     print("-----------------------------------")
                     print("light_status: %d" % light_status)
                     print("interval: 3")
-                    print(cross_data["Light Status"])
+                    print(cross_data["Light_Status"])
                     timer = Timer(5, change_lightstatus, args=(3,))
                     timer.start()
 
@@ -132,13 +132,13 @@ def receive_and_save():
                 timer.cancel()
                 if light_status != 5:
                     with thread_lock:
-                        cross_data["Light Status"] = color_set[8]
-                        cross_data["Light Status"][lane_name[floor(((light_status + 7) % 8) / 2)]] = "yellow"
+                        cross_data["Light_Status"] = color_set[8]
+                        cross_data["Light_Status"][lane_name[floor(((light_status + 7) % 8) / 2)]] = "yellow"
                     light_status = 8
                     print("-----------------------------------")
                     print("light_status: %d" % light_status)
                     print("interval: 3")
-                    print(cross_data["Light Status"])
+                    print(cross_data["Light_Status"])
                     timer = Timer(5, change_lightstatus, args=(5,))
                     timer.start()
 
@@ -148,13 +148,13 @@ def receive_and_save():
                 timer.cancel()
                 if light_status != 7:
                     with thread_lock:
-                        cross_data["Light Status"] = color_set[8]
-                        cross_data["Light Status"][lane_name[floor(((light_status + 7) % 8) / 2)]] = "yellow"
+                        cross_data["Light_Status"] = color_set[8]
+                        cross_data["Light_Status"][lane_name[floor(((light_status + 7) % 8) / 2)]] = "yellow"
                     light_status = 8
                     print("-----------------------------------")
                     print("light_status: %d" % light_status)
                     print("interval: 3")
-                    print(cross_data["Light Status"])
+                    print(cross_data["Light_Status"])
                     timer = Timer(5, change_lightstatus, args=(7,))
                     timer.start()
 
@@ -193,9 +193,9 @@ def receive_and_save():
                 lane_name[3]: action[3]}
 
         with thread_lock:
-            cross_data["Key Flow"] = key_flow
-            cross_data["Special Car"] = special_car
-            cross_data["Light Time"] = light_time 
+            cross_data["Key_Flow"] = key_flow
+            cross_data["Special_Car"] = special_car
+            cross_data["Light_Time"] = light_time 
         
         
 
@@ -209,10 +209,10 @@ def change_lightstatus(light_status_):
     global light_status, cross_data, color_set
     light_status = light_status_
     with thread_lock:
-        cross_data["Light Status"] = color_set[light_status]
+        cross_data["Light_Status"] = color_set[light_status]
     print("-----------------------------------")
     print("light_status: %d" % light_status)
-    print(cross_data["Light Status"])
+    print(cross_data["Light_Status"])
 
 def timer_func():
     global light_status
@@ -237,12 +237,12 @@ def light_control():
         interval = action[3]
     
     with thread_lock:
-        cross_data["Light Status"] = color_set[light_status]
+        cross_data["Light_Status"] = color_set[light_status]
 
     print("-----------------------------------")
     print("light_status: %d" % light_status)
     print("interval: %d" % interval)
-    print(cross_data["Light Status"])
+    print(cross_data["Light_Status"])
     
     timer = Timer(interval, timer_func)
     timer.start()
