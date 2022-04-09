@@ -5,6 +5,7 @@ from threading import Timer, Lock, Thread
 import json
 import time
 from flask import Flask, jsonify
+from flask_cors import *
 from math import floor
 
 ql = QL()
@@ -62,7 +63,9 @@ cross_data = {"Key Flow": key_flow,\
                 "People": people }
 
 app = Flask(__name__)
+CORS(app, supports_credentials=True)
 thread_lock = Lock()
+
 
 @app.route('/api/info', methods=['GET'])
 def get_tasks():
