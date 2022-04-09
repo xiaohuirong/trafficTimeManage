@@ -63,7 +63,7 @@ cross_data = {"Key Flow": key_flow,\
                 "People": people }
 
 app = Flask(__name__)
-CORS(app, supports_credentials=True)
+CORS(app, resources={ r"/*" : {"origins" : "*"}})
 thread_lock = Lock()
 
 
