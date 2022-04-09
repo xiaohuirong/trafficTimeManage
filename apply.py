@@ -52,6 +52,9 @@ light_time = {lane_name[0]: action[0],\
                 lane_name[1]: action[1],\
                 lane_name[2]: action[2],\
                 lane_name[3]: action[3]}
+history_car = [0, 0, 0, 0, 0, 0]
+history_people = [0, 0, 0, 0, 0, 0]
+
 
 
 people = {"Road1": 0, "Road2": 0, "Road3": 0, "Road4": 0}
@@ -60,7 +63,9 @@ cross_data = {"Key_Flow": key_flow,\
                 "Special_Car": special_car,\
                 "Light_Time": light_time,\
                 "Light_Status": color_set[light_status],\
-                "People": people }
+                "People": people,\
+                "History_Car": history_car,\
+                "History_People": history_people }
 
 app = Flask(__name__)
 CORS(app, resources={ r"/*" : {"origins" : "*"}})
@@ -247,7 +252,23 @@ def light_control():
     timer = Timer(interval, timer_func)
     timer.start()
     
-    
+def histimerfun():
+    global thread_lock, cross_data, history_car, history_people, key_flow, people
+
+    with thread_lock:
+        history_car.insert(0, key_flow["East_West_Straight"]+key_flow["East_West_Left"]+\
+            key_flow["South_North_Straight"] + key_flow["South_North_Left"])
+        history_car.pop(6)
+        history_people.insert(0, people["Road1"]+people["Road2"]+people["Road3"]+people["Road4"])
+        history_people.pop(6)
+
+        cross_data["History_Car"] = history_car
+        cross_data["History_People"] = history_people
+
+    print(cross_data["History_Car"])
+    print(cross_data["History_People"])
+    historytime = Timer(300, histimerfun)
+    historytime.start()
 
 if __name__=='__main__':
     light_control()
@@ -259,5 +280,8 @@ if __name__=='__main__':
     t2 = Thread(target=reveive_people_data)
     t2.daemon = True
     t2.start()
+
+    historytime = Timer(300, histimerfun)
+    historytime.start()
 
     app.run(host="0.0.0.0", port=5001)
