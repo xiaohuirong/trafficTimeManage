@@ -41,19 +41,19 @@ color_set = [{lane_name[0]: "red", lane_name[1]: "red", lane_name[2]: "red", lan
 special_car = {lane_name[0]: False,\
                 lane_name[1]: False,\
                 lane_name[2]: False,\
-                lane_name[3]: False } 
+                lane_name[3]: False }
 
-key_flow = {lane_name[0]: 180,\
-                lane_name[1]: 250,\
-                lane_name[2]: 320,\
-                lane_name[3]: 280 }
+key_flow = {lane_name[0]: 18,\
+                lane_name[1]: 25,\
+                lane_name[2]: 32,\
+                lane_name[3]: 28 }
 
 light_time = {lane_name[0]: action[0],\
                 lane_name[1]: action[1],\
                 lane_name[2]: action[2],\
                 lane_name[3]: action[3]}
-history_car = [0, 0, 0, 0, 0, 0]
-history_people = [0, 0, 0, 0, 0, 0]
+history_car = [85, 60, 100, 90, 70, 80]
+history_people = [40, 38, 50, 40, 70, 50]
 
 
 
@@ -93,7 +93,7 @@ def reveive_people_data():
 
 def receive_and_save():
     global special_car, key_flow, light_time, lock, light_status, timer, thread_lock, cross_data, color_set, lane_name
-    server = Real(5000)
+    server = Real(4998)
     while(1):
         receive_data = server.get_data()
         # time.sleep(5)
@@ -167,8 +167,8 @@ def receive_and_save():
             if lock and light_status != 8:
                 lock = False
                 light_control()
-                
-        
+
+
         special_car[lane_name[0]] = receive_data[4]
         special_car[lane_name[1]] = receive_data[5]
         special_car[lane_name[2]] = receive_data[6]
@@ -181,35 +181,36 @@ def receive_and_save():
 
         status_list= [0]*4
         for i in range(0,4):
-            if receive_data[i] > 300 :
+            if receive_data[i] > 30 :
                 status_list[i] = 1
             else :
                 status_list[i] = 0
         status = 8*status_list[0] + 4*status_list[1] + 2*status_list[2] + status_list[3]
-        
+
 
         action_index = ql.check(status)
         action = ql.action_table[action_index]
         action.append(54-sum(action))
-        
+
         light_time = {lane_name[0]: action[0],\
                 lane_name[1]: action[1],\
                 lane_name[2]: action[2],\
                 lane_name[3]: action[3]}
 
+        print(light_time)
         with thread_lock:
             cross_data["Key_Flow"] = key_flow
             cross_data["Special_Car"] = special_car
-            cross_data["Light_Time"] = light_time 
-        
-        
+            cross_data["Light_Time"] = light_time
+
+
 
         # print(cross_data)
         # json_data = json.dumps(cross_data, indent=4)
 
         # with open('cross_data.json', 'w') as json_file:
         #     json_file.write(json_data)
-        
+
 def change_lightstatus(light_status_):
     global light_status, cross_data, color_set
     light_status = light_status_
@@ -222,7 +223,7 @@ def change_lightstatus(light_status_):
 def timer_func():
     global light_status
     light_status  =  (light_status + 1) % 8
- 
+
     light_control()
 
 def light_control():
@@ -238,9 +239,9 @@ def light_control():
         interval = action[1]
     elif light_status == 5:
         interval = action[2]
-    else: 
+    else:
         interval = action[3]
-    
+
     with thread_lock:
         cross_data["Light_Status"] = color_set[light_status]
 
@@ -248,10 +249,10 @@ def light_control():
     print("light_status: %d" % light_status)
     print("interval: %d" % interval)
     print(cross_data["Light_Status"])
-    
+
     timer = Timer(interval, timer_func)
     timer.start()
-    
+
 def histimerfun():
     global thread_lock, cross_data, history_car, history_people, key_flow, people
 
@@ -272,7 +273,7 @@ def histimerfun():
 
 if __name__=='__main__':
     light_control()
-    
+
     t = Thread(target=receive_and_save)
     t.daemon = True
     t.start()
